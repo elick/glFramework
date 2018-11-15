@@ -22,7 +22,19 @@ class yato
     public function run()
     {
         //自动加载类文件
-        spl_autoload_register(array($this,'autoload'));
+        spl_autoload_register(array($this,'autoLoad'));
+        //初始化
+        $this->int();
+        $this->processResquest();
+        //设置路由
+        $this->route();
+    }
+    /*
+     * 自动加载类文件
+     */
+    public function autoLoad($className)
+    {
+        //
     }
 
 }
