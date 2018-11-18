@@ -17,5 +17,5 @@ define('APP_DEBUG',true);
 //网站域名
 define('WEB_DOMAIN','http://www.glxuexi.com');
 //加载框架核心代码
-require APP_PATH.'core'.DS.'yato.php';
-core\yato::createApp( APP_PATH.DS.'config'.DS.'.config.php')->run();
+require APP_PATH . 'core' . DS . 'base'. DS .'yato.php';
+core\base\yato::createApp( APP_PATH.DS.'config'.DS.'.config.php')->run();
