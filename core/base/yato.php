@@ -17,20 +17,33 @@ class yato
     public static function createApp($config)
     {
         self::$_config = $config;
+        //开始注册事件
         return new self();
     }
+
+    /**
+     * 入口执行
+     */
     public function run()
     {
         //自动加载类文件
         spl_autoload_register([$this,'autoLoad']);
         //初始化
-        $this->init();
+        $this->preinit();
         //http组件
         $this->processRequest();
         //设置路由
         $this->route();
         //输出
 //        $this->response();
+    }
+
+    /**
+     * 注册组件
+     */
+    public function registerComponents()
+    {
+        //
     }
     public function route()
     {
@@ -55,13 +68,12 @@ class yato
      */
     public function init()
     {
-        //
-        //设置自定义的错误处理函数
-//        set_error_handler('_error_handler');
-        //设置自定的异常处理函数
-//        set_exception_handler('_exception_handler');
-        //设置程序终止后函数
-//        register_shutdown_function('_shutdown_handler');
+        //错误处理函数
+    }
+    public function preinit()
+    {
+        //错误处理函数
+        reporting::create()->init();
     }
     //处理参数
     public function processRequest()
