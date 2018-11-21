@@ -20,4 +20,5 @@ define('WEB_DOMAIN','http://www.glxuexi.com');
 define('ERROR_OUTPUT_PATH',APP_PATH.'error/error.log');
 //加载框架核心代码
 require APP_PATH . 'core' . DS . 'base'. DS .'yato.php';
-core\base\yato::createApp( APP_PATH.DS.'config'.DS.'.config.php')->run();
+$yato = new core\base\yato( APP_PATH.DS.'config'.DS.'.config.php');
+$yato->run();
