@@ -30,8 +30,13 @@ class yato
         spl_autoload_register([$this,'autoLoad']);
         //初始化
         $this->preinit();
+
+        //初始化组件
+//        $componet = new component();
+//        $componet->setConfig(self::$_config);
+
         //http组件
-        $this->processRequest();
+//        $this->processRequest();
         //设置路由
         $this->route();
         //输出
@@ -48,6 +53,38 @@ class yato
     public function route()
     {
         //
+        $controller = self::$_config['defaultController'];
+        $action = self::$_config['defaultController'];
+        $module = self::$_config['defaultModule'];
+        if(isset($_GET['c']) && $_GET['c']){
+            $controller = strtolower($_GET['c']);
+        }
+        if(isset($_GET['a']) && $_GET['a']){
+            $action = strtolower($_GET['a']);
+        }
+        $action = 'action'.ucfirst($action);
+        if(isset($_GET['m']) && $_GET['m']){
+            $module = strtolower($_GET['m']);
+        }
+
+        $controllerClass = $this->getModuleName($module,$controller);
+        $conObj =  new $controllerClass($controller,$action);
+
+        if(method_exists($conObj,$action)){
+            call_user_func([$conObj,$action]);
+        }else{
+            throw new cException('访问方法不存在');
+        }
+    }
+
+    /**
+     * 获取模块的路径
+     * @param $module
+     * @param $controller
+     */
+    public function getModuleName($module,$controller)
+    {
+        return MODULE_NAME.DS.$module.DS.'controller'.DS.$controller;
     }
     /*
      * 自动加载类文件

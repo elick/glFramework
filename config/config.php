@@ -8,5 +8,17 @@
  * Version: 1.0
  */
 return [
-
+    'defaultController'=>'index',//默认控制器
+    'defaultAction'=>'index',//默认访问方法
+    'defaultModule'=>'app',//默认访问模块
+    'components'=>[
+        'db'=>[
+            'host'=>'',
+            'name'=>'',
+            'password'=>'',
+            'port'=>'',
+            'charset'=>'',
+            'class'=>'',
+        ]
+    ]
 ];
