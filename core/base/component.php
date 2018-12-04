@@ -37,7 +37,7 @@ class component
         //
         if(is_array($config)) {
             foreach($config as $key=>$value)
-                $this->$key=$value;
+                $this->key=$value;
         }
     }
     public function create($config)
@@ -112,9 +112,10 @@ class component
 //                $component->init();
         }
     }
-    public function hasComponet($name)
+    public function hasComponet($id)
     {
         //
+        return isset($this->_components[$id]) || isset($this->config[$id]);
     }
     public function __get($name)
     {

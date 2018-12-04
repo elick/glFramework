@@ -11,14 +11,13 @@
 namespace core\base;
 
 
-class yato
+class yato extends component
 {
-    private static $_config = [];
-    public static function createApp($config)
+//    private static $_config = [];
+    public function __construct($config)
     {
-        self::$_config = $config;
+        $this->setConfig($config);
         //开始注册事件
-        return new self();
     }
 
     /**
@@ -28,6 +27,8 @@ class yato
     {
         //自动加载类文件
         spl_autoload_register([$this,'autoLoad']);
+        //设置配置文件
+        $this->setConfig(self::$_config);
         //初始化
         $this->preinit();
 
