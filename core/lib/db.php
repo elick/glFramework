@@ -206,7 +206,7 @@ class db
      */
     public function getOne()
     {
-        return $this->query('fetch', PDO::FETCH_COLUMN);
+        return $this->query('fetchColumn');
     }
 
     /**
@@ -228,15 +228,130 @@ class db
     }
 
     /**
+     * 更新数据
+     * @param $table
+     * @param $values
+     * @param $where
+     * @param array $whereArr
+     * @return mixed
+     * @throws cException
+     */
+    public function update($table, $values, $where, $whereArr = [])
+    {
+        $table = $this->prefix . $table;
+        $params = $names = $column = [];
+        foreach ($values as $key => $value) {
+            $column[] = $key . '=:' . $key;
+            $names[] = ":{$key}";
+            $params[':' . $key] = $value;
+        }
+        if (is_array($where)) {
+            foreach ($where as $name => $val) {
+                $whereArr[] = $name . ':' . $name;
+                $params[':' . $name] = $val;
+            }
+            $where = join(',', $whereArr);
+        }
+        $sql = 'UPDATE ' . $table . ' set' . join(',', $column);
+        if ($where)
+            $sql .= " WHERE " . $where;
+        return $this->execute($sql, $params);
+    }
+
+    /**
+     * 插入数据
+     * @param $table
+     * @param $param
+     * @return
+     */
+    public function insert($table, $values)
+    {
+        $table = $this->prefix . $table;
+
+        $params = $names = $column = [];
+
+        foreach ($values as $key => $value) {
+            $column[] = $key;
+            $names[] = ":{$key}";
+            $params[':' . $key] = $value;
+        }
+        $sql = 'INSERT INTO ' . $table . '('
+            . join(',', $column) . ')VALUES('
+            . join(',', $names) . ');';
+        return $this->execute($sql, $params);
+    }
+
+    /**
+     * replace into
+     * @param $table
+     * @param $values
+     * @return mixed
+     * @throws cException
+     */
+    public function replace($table, $values)
+    {
+        $table = $this->prefix . $table;
+
+        $params = $names = $column = [];
+
+        foreach ($values as $key => $value) {
+            $column[] = $key;
+            $names[] = ":{$key}";
+            $params[':' . $key] = $value;
+        }
+        $sql = 'REPLACE INTO ' . $table . '('
+            . join(',', $column) . ')VALUES('
+            . join(',', $names) . ');';
+        return $this->execute($sql, $params);
+    }
+
+    /**
+     * 批量插入数据
+     * @param $table
+     * @param $array_values
+     * @return mixed
+     * @throws cException
+     */
+    public function multiInsert($table, $array_values)
+    {
+        $table = $this->prefix . $table;
+        $sql = '';
+        $params = [];
+        $i = 0;
+        foreach ($array_values as $values) {
+            $names = [];
+            $columns = [];
+            foreach ($values as $name => $value) {
+                $columns[] = ':' . $name . $i;
+                $params[':' . $name . $i] = $value;
+            }
+            if (!$i) {
+                $sql = 'INSERT INTO ' . $table
+                    . ' (' . join(', ', $names) . ') VALUES ('
+                    . join(', ', $columns) . ')';
+            } else {
+                $sql .= ',(' . join(', ', $columns) . ')';
+            }
+            $i++;
+        }
+        return $this->execute($sql, $params);
+    }
+
+    /**
      * 查询
      * @param $method
      * @param $mode
      * @return mixed
+     * @return
      */
-    public function query($method, $mode)
+    public function query($method, $mode = '')
     {
         $this->prepare();
-        $result = call_user_func_array(array($this->_statement, $method), [$mode]);
+        if ($mode)
+            $result = call_user_func_array(array($this->_statement, $method), [$mode]);
+        else
+            $result = call_user_func_array(array($this->_statement, $method));
+
         $this->_statement->closeCursor();
         return $result;
     }
@@ -245,24 +360,35 @@ class db
      * 预处理
      * @throws cException
      */
-    public function prepare()
+    public function prepare($sql = '')
     {
         try {
-            $sql = $this->buildSql();
+            $sql = $this->buildSql($sql);
             $this->_statement = $this->_pdo->prepare($sql);
             if ($this->_params) {
                 $this->_statement->execute($this->_params);
             } else {
-                $this->_statement->execute($this->_params);
+                $this->_statement->execute();
             }
         } catch (Exception $e) {
             throw new cException('statement:' . $e->getMessage() . ',errorcode:' . $e->getCode(), __LINE__);
         }
     }
 
-    public function execute()
+    /**
+     * 执行sql
+     * @param $sql
+     * @param array $param
+     * @return mixed
+     * @throws cException
+     */
+    public function execute($sql, $param = [])
     {
-
+        $this->_params = $param;
+        $this->prepare($sql);
+        $n = $this->_statement->rowCount();
+        $this->_statement->closeCursor();
+        return $n;
     }
 
     /**
@@ -270,9 +396,11 @@ class db
      * @return string
      * @throws cException
      */
-    private function buildSql()
+    private function buildSql($sql)
     {
         //
+        if ($sql)
+            return $sql;
         $query = $this->_query;
         $sql = 'SELECT';
         $sql .= ' ' . (isset($query['select']) ? $query['select'] : '*');
