@@ -12,12 +12,16 @@ namespace module\app\controller;
 
 
 use core\base\controller;
+use core\base\yato;
 
 class index extends controller
 {
     public function actionIndex()
     {
-        echo 1;exit;
+        $t = yato::config()->db;
+        var_dump($t->connect()->select('user')->from('user')->getOne());
+        echo 1;
+        exit;
     }
 
 }

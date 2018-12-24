@@ -8,7 +8,7 @@
  * Version: 1.0
  */
 
-namespace core\lib;
+//namespace core\lib;
 
 
 use core\base\cException;
@@ -32,15 +32,22 @@ class db
     protected $_params = [];//sql查询参数
     private $_statement;
 
+    public function init($config)
+    {
+        return new self($config);
+    }
+
     public function __construct($config)
     {
         $this->setAttr($config);
         switch ($this->type) {
             case 'mysql':
                 if (empty($this->dsn)) {
-                    $this->dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
-                    if ($this->port)
+                    $this->dsn = 'mysql:host=' . $this->host . ';dbname='
+                        . $this->dbname;
+                    if ($this->port) {
                         $this->dsn .= ';port=' . $this->port;
+                    }
                 }
                 break;
             default:
@@ -65,8 +72,10 @@ class db
      */
     public function createPdo()
     {
-        $this->_pdo = new PDO($this->dsn, $this->username,
-            $this->password, $this->_attributes);
+        $this->_pdo = new PDO(
+            $this->dsn, $this->username,
+            $this->password, $this->_attributes
+        );
     }
 
     /**
@@ -96,6 +105,7 @@ class db
 
     /**
      * 设置属性
+     *
      * @param $attr
      */
     public function setAttr($attr)
@@ -119,6 +129,7 @@ class db
 
     /**
      * 设置查询字段
+     *
      * @param string $dbFiled
      */
     public function select($dbFiled = '*')
@@ -138,7 +149,8 @@ class db
 
     /**
      * 设置查询的where条件
-     * @param $conditions
+     *
+     * @param       $conditions
      * @param array $param
      */
     public function where($conditions, $param = [])
@@ -151,6 +163,7 @@ class db
     }
 
     /** 设置group
+     *
      * @param $column
      */
     public function group($column)
@@ -160,6 +173,7 @@ class db
     }
 
     /**设置limit
+     *
      * @param $offset
      * @param $limt
      */
@@ -167,13 +181,15 @@ class db
     {
         //
         $this->_query['limit'] = intval($limit);
-        if ($offset)
+        if ($offset) {
             $this->offset($offset);
+        }
         return $this;
     }
 
     /**
      * 设置offset
+     *
      * @param $offset
      */
     public function offset($offset)
@@ -184,6 +200,7 @@ class db
 
     /**
      * 设置order
+     *
      * @param $column
      */
     public function order($column)
@@ -193,6 +210,7 @@ class db
 
     /**
      * 设置having
+     *
      * @param $column
      */
     public function having($column)
@@ -211,6 +229,7 @@ class db
 
     /**
      * 获取一行数据
+     *
      * @return mixed
      */
     public function getRow()
@@ -220,6 +239,7 @@ class db
 
     /**
      * 获取所有数据
+     *
      * @return mixed
      */
     public function getAll()
@@ -229,10 +249,12 @@ class db
 
     /**
      * 更新数据
-     * @param $table
-     * @param $values
-     * @param $where
+     *
+     * @param       $table
+     * @param       $values
+     * @param       $where
      * @param array $whereArr
+     *
      * @return mixed
      * @throws cException
      */
@@ -253,15 +275,18 @@ class db
             $where = join(',', $whereArr);
         }
         $sql = 'UPDATE ' . $table . ' set' . join(',', $column);
-        if ($where)
+        if ($where) {
             $sql .= " WHERE " . $where;
+        }
         return $this->execute($sql, $params);
     }
 
     /**
      * 插入数据
+     *
      * @param $table
      * @param $param
+     *
      * @return
      */
     public function insert($table, $values)
@@ -283,8 +308,10 @@ class db
 
     /**
      * replace into
+     *
      * @param $table
      * @param $values
+     *
      * @return mixed
      * @throws cException
      */
@@ -307,8 +334,10 @@ class db
 
     /**
      * 批量插入数据
+     *
      * @param $table
      * @param $array_values
+     *
      * @return mixed
      * @throws cException
      */
@@ -339,18 +368,23 @@ class db
 
     /**
      * 查询
+     *
      * @param $method
      * @param $mode
+     *
      * @return mixed
      * @return
      */
     public function query($method, $mode = '')
     {
         $this->prepare();
-        if ($mode)
-            $result = call_user_func_array(array($this->_statement, $method), [$mode]);
-        else
-            $result = call_user_func_array(array($this->_statement, $method));
+        if ($mode) {
+            $result = call_user_func_array(
+                [$this->_statement, $method], [$mode]
+            );
+        } else {
+            $result = call_user_func_array([$this->_statement, $method]);
+        }
 
         $this->_statement->closeCursor();
         return $result;
@@ -358,6 +392,7 @@ class db
 
     /**
      * 预处理
+     *
      * @throws cException
      */
     public function prepare($sql = '')
@@ -371,14 +406,19 @@ class db
                 $this->_statement->execute();
             }
         } catch (Exception $e) {
-            throw new cException('statement:' . $e->getMessage() . ',errorcode:' . $e->getCode(), __LINE__);
+            throw new cException(
+                'statement:' . $e->getMessage() . ',errorcode:' . $e->getCode(),
+                __LINE__
+            );
         }
     }
 
     /**
      * 执行sql
-     * @param $sql
+     *
+     * @param       $sql
      * @param array $param
+     *
      * @return mixed
      * @throws cException
      */
@@ -393,37 +433,46 @@ class db
 
     /**
      * 生成sql
+     *
      * @return string
      * @throws cException
      */
     private function buildSql($sql)
     {
         //
-        if ($sql)
+        if ($sql) {
             return $sql;
+        }
         $query = $this->_query;
         $sql = 'SELECT';
         $sql .= ' ' . (isset($query['select']) ? $query['select'] : '*');
 
-        if (isset($query['from']))
+        if (isset($query['from'])) {
             $sql .= "\nFROM " . $query['from'];
-        else
-            throw new cException('The DB query must contain the "from" portion.');
+        } else {
+            throw new cException(
+                'The DB query must contain the "from" portion.'
+            );
+        }
 
 //        if (isset($query['join']))
 //            $sql .= "\n" . (is_array($query['join']) ? implode("\n", $query['join']) : $query['join']);
 
-        if (isset($query['where']))
+        if (isset($query['where'])) {
             $sql .= "\nWHERE " . $query['where'];
+        }
 
-        if (isset($query['group']))
+        if (isset($query['group'])) {
             $sql .= "\nGROUP BY " . $query['group'];
+        }
 
-        if (isset($query['having']))
+        if (isset($query['having'])) {
             $sql .= "\nHAVING " . $query['having'];
+        }
 
-        if (isset($query['order']))
+        if (isset($query['order'])) {
             $sql .= "\nORDER BY " . $query['order'];
+        }
 
         $limit = isset($query['limit']) ? (int)$query['limit'] : -1;
         $offset = isset($query['offset']) ? (int)$query['offset'] : -1;
@@ -431,14 +480,16 @@ class db
             switch ($this->type) {
                 case 'mysql':
                     $sql .= " \nLIMIT " . $limit;
-                    if ($offset > 0)
+                    if ($offset > 0) {
                         $sql .= "\nOFFSET " . $offset;
+                    }
                     break;
                 case 'oracle':
                 case 'mssql':
                     $sql .= " \nOFFSET " . $limit;
-                    if ($offset > 0)
+                    if ($offset > 0) {
                         $sql .= "\nROWS FETCH NEXT " . $offset . ' ROWS ONLY';
+                    }
                     break;
                 default:
                     break;
@@ -450,7 +501,9 @@ class db
     }
 
     /** 生成查询条件字符串
+     *
      * @param $conditions
+     *
      * @return string
      */
     public function processCondition($conditions)
