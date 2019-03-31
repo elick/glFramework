@@ -18,7 +18,6 @@ class yato
 
     public static function createApp($config)
     {
-
         return new application($config);
     }
 
@@ -32,12 +31,55 @@ class yato
         return self::$_config;
     }
 
+    /**
+     * 内核文件命名空间映射关系
+     * @return array
+     */
+    protected static function classMap()
+    {
+        /*return [
+            'app\controller' => APP_PATH . '/core/base/controller.php',
+            'fastphp\base\Model' => CORE_PATH . '/base/Model.php',
+            'fastphp\base\View' => CORE_PATH . '/base/View.php',
+            'fastphp\db\Db' => CORE_PATH . '/db/Db.php',
+            'fastphp\db\Sql' => CORE_PATH . '/db/Sql.php',
+        ];*/
+    }
+
+
+    // 自动加载类
+//    public function loadClass($className)
+    public static function autoLoad($className)
+    {
+        echo $className;
+        echo "<br/>";
+        $classMap = self::classMap();
+
+        if (isset($classMap[$className])) {
+            // 包含内核文件
+            $file = $classMap[$className];
+        } elseif (strpos($className, '\\') !== false) {
+            // 包含应用（application目录）文件
+            $file = APP_PATH . str_replace('\\', '/', $className) . '.php';
+            echo $file;
+            echo "<br/>";
+            if (!is_file($file)) {
+                return;
+            }
+        } else {
+            return;
+        }
+
+        include $file;
+
+        // 这里可以加入判断，如果名为$className的类、接口或者性状不存在，则在调试模式下抛出错误
+    }
+
     /*
      * 自动加载类文件
      */
-    public static function autoLoad($className)
+    public static function autoLoad_bak($className)
     {
-        //
         $filePath = APP_PATH . $className . '.php';
 //        echo APP_PATH . 'core' . DS . 'lib' . DS . $className . '.php';
         if (file_exists($filePath)) {
@@ -53,6 +95,14 @@ class yato
         )
         ) {
             include APP_PATH . 'core' . DS . 'lib' . DS . $className . '.php';
+        } elseif (
+        file_exists(
+            APP_PATH .  'app' . DS . 'models' . DS . $className . '.php'
+        )
+        ) {
+            //加载module类
+            include APP_PATH .  'app'. DS . 'models' . DS . $className . '.php';
+
         } else {
             return false;
         }
@@ -67,7 +117,7 @@ class application extends component
 
     public function __construct($config)
     {
-//        $this->setConfig($config);
+        $this->setConfig($config);
         self::$_config = $config;
         //开始注册事件
     }
@@ -77,8 +127,8 @@ class application extends component
      */
     public function run()
     {
-        yato::setConfig($this);
         //设置配置文件
+        yato::setConfig($this);
 //        $this->setConfig(self::$_config);
         //初始化
         $this->preinit();
@@ -114,20 +164,58 @@ class application extends component
     public function route()
     {
         //
-        $route = new router($this->config);
+        $route = new router(self::$_config);
         $parth = $route->getUrlParam();
         $controller = strtolower($parth['c']);
         $action = strtolower($parth['a']);
-        $module = strtolower($parth['m']);
-        
-        $controllerClass = $this->getModuleName($module, $controller);
-        $conObj = new $controllerClass($controller, $action);
+//        $module = strtolower($parth['m']);
 
+//        $controllerClass = $this->getModuleName($module, $controller);
+        $controllerName = $controller.'Controller';
+        $file = $this->getControllerFileName($controllerName);
+//        if(file_exists($file)){
+//            include $file;
+//        }else{
+//            exit('文件不存在');
+//        }
+
+
+        $controller = 'app\\controller\\'. $controller . 'Controller';
+        if (!class_exists($controller)) {
+            exit($controller . '控制器不存在');
+        }
+        if (!method_exists($controller, $action)) {
+            exit($action . '方法不存在');
+        }
+        $param = array(
+            '',$controllerName,$action
+        );
+
+        // 如果控制器和操作名存在，则实例化控制器，因为控制器对象里面
+        // 还会用到控制器名和操作名，所以实例化的时候把他们俩的名称也
+        // 传进去。结合Controller基类一起看
+        $dispatch = new $controller($controller, $action);
+
+        // $dispatch保存控制器实例化后的对象，我们就可以调用它的方法，
+        // 也可以像方法中传入参数，以下等同于：$dispatch->$actionName($param)
+        call_user_func_array(array($dispatch, $action), $param);
+
+
+
+        /*$conObj = new $controllerName($controller, $action);
         if (method_exists($conObj, $action)) {
             call_user_func([$conObj, $action]);
         } else {
             throw new cException('访问方法不存在');
-        }
+        }*/
+    }
+
+    /**
+     * 获取控制器文件名
+     * @param $controller
+     */
+    public function getControllerFileName($controller){
+        return APP_PATH.'app' . DS . 'controller' . DS. $controller .'.php';
     }
 
     /**

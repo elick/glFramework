@@ -8,21 +8,21 @@
  * Version: 1.0
  */
 
-//namespace core\lib;
-
+namespace core\db;
 
 use core\base\cException;
+use PDO;
 
 class db
 {
-    public $type = '';//数据库类型
+    public $type = 'mysql';//数据库类型
     public $prefix = '';//表前缀
     public $dsn = '';//连接字符串
     public $logging = false;//是否记录执行sql
-    public $dbname = '';//数据库名
-    public $host = '';//数据库地址
+    public $dbname = 'symbol';//数据库名
+    public $host = 'localhost';//数据库地址
     public $port = 3306;//用户库端口
-    public $username = '';//数据库用户名
+    public $username = 'root';//数据库用户名
     public $password = '';//数据库密码
     public $charset = '';//数据库编码
     protected $_active = false;//是否初始化pdo
@@ -31,6 +31,7 @@ class db
     protected $_query = [];//sql属性
     protected $_params = [];//sql查询参数
     private $_statement;
+    protected $table;
 
     public function init($config)
     {
@@ -40,6 +41,7 @@ class db
     public function __construct($config)
     {
         $this->setAttr($config);
+        var_dump($config);
         switch ($this->type) {
             case 'mysql':
                 if (empty($this->dsn)) {

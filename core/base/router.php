@@ -11,7 +11,7 @@
 namespace core\base;
 
 
-use function Couchbase\defaultDecoder;
+//use function Couchbase\defaultDecoder;
 
 class router
 {
@@ -22,7 +22,7 @@ class router
 
     public function __construct($config)
     {
-        $this->_urlType = $config['urlType'];
+        $this->_urlType = isset($config['urlType'])?$config['urlType']:1;
         $this->_config = $config;
         $this->_queryString = $this->getQueryString();
     }
