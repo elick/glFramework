@@ -124,11 +124,11 @@ class router
     {
         if ($this->getPathInfo()) {
             $pathInfo = explode('/', substr($this->getPathInfo(), 1));
-            if (count($pathInfo) > 3) {
+            if (count($pathInfo) >= 3) {
                 $this->_requestParams['m'] = $pathInfo[0];
                 $this->_requestParams['c'] = $pathInfo[1];
                 $this->_requestParams['a'] = $pathInfo[2];
-            } elseif (count($pathInfo) > 2) {
+            } elseif (count($pathInfo) >= 2) {
                 $this->_requestParams['m'] = $this->_config['defaultModule'];
                 $this->_requestParams['c'] = $pathInfo[0];
                 $this->_requestParams['a'] = $pathInfo[1];

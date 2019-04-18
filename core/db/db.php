@@ -41,7 +41,6 @@ class db
     public function __construct($config)
     {
         $this->setAttr($config);
-        var_dump($config);
         switch ($this->type) {
             case 'mysql':
                 if (empty($this->dsn)) {
@@ -343,6 +342,42 @@ class db
      * @return mixed
      * @throws cException
      */
+    public function multiReplace($table, $array_values)
+    {
+        $table = $this->prefix . $table;
+        $sql = '';
+        $params = [];
+        $i = 0;
+        foreach ($array_values as $values) {
+            $names = [];
+            $columns = [];
+            foreach ($values as $name => $value) {
+                if($i==0)
+                    array_push($names,$name);
+                $columns[] = ':' . $name . $i;
+                $params[':' . $name . $i] = $value;
+            }
+            if (!$i) {
+                $sql = 'REPLACE INTO ' . $table
+                    . ' (' . join(', ', $names) . ') VALUES ('
+                    . join(', ', $columns) . ')';
+            } else {
+                $sql .= ',(' . join(', ', $columns) . ')';
+            }
+            $i++;
+        }
+        return $this->execute($sql, $params);
+    }
+
+    /**
+     * 批量插入数据
+     *
+     * @param $table
+     * @param $array_values
+     *
+     * @return mixed
+     * @throws cException
+     */
     public function multiInsert($table, $array_values)
     {
         $table = $this->prefix . $table;
@@ -353,6 +388,8 @@ class db
             $names = [];
             $columns = [];
             foreach ($values as $name => $value) {
+                if($i==0)
+                    array_push($names,$name);
                 $columns[] = ':' . $name . $i;
                 $params[':' . $name . $i] = $value;
             }

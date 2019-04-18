@@ -51,8 +51,8 @@ class yato
 //    public function loadClass($className)
     public static function autoLoad($className)
     {
-        echo $className;
-        echo "<br/>";
+//        echo $className;
+//        echo "<br/>";
         $classMap = self::classMap();
 
         if (isset($classMap[$className])) {
@@ -61,8 +61,8 @@ class yato
         } elseif (strpos($className, '\\') !== false) {
             // 包含应用（application目录）文件
             $file = APP_PATH . str_replace('\\', '/', $className) . '.php';
-            echo $file;
-            echo "<br/>";
+//            echo $file;
+//            echo "<br/>";
             if (!is_file($file)) {
                 return;
             }

@@ -11,6 +11,7 @@ return [
     'defaultController' => 'index',//默认控制器
     'defaultAction'     => 'index',//默认访问方法
     'defaultModule'     => 'app',//默认访问模块
+    'urlType'=>2,
     'components'        => [
         'db' => [
             'type'     => 'mysql',

@@ -44,4 +44,7 @@ class model
     public function getAll($where){
         return $this->db->select('*')->from($this->table)->where($where)->getAll();
     }
+    public function multiReplace($value){
+        return $this->db->multiReplace($this->table,$value);
+    }
 }
